@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/book-rental-record-test/static/css/main.63027026.css",
+    "main.js": "/book-rental-record-test/static/js/main.86b6a36a.js",
+    "static/js/453.d855a71b.chunk.js": "/book-rental-record-test/static/js/453.d855a71b.chunk.js",
+    "index.html": "/book-rental-record-test/index.html",
+    "main.63027026.css.map": "/book-rental-record-test/static/css/main.63027026.css.map",
+    "main.86b6a36a.js.map": "/book-rental-record-test/static/js/main.86b6a36a.js.map",
+    "453.d855a71b.chunk.js.map": "/book-rental-record-test/static/js/453.d855a71b.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.63027026.css",
+    "static/js/main.86b6a36a.js"
+  ]
+}
