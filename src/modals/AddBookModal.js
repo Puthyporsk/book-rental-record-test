@@ -6,8 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { PropTypes } from "prop-types";
-
-const base_url = process.env.REACT_APP_NODE_ENV === 'development' ? process.env.REACT_APP_LOCAL_BASE_URL : process.env.REACT_APP_SERVER_BASE_URL
+import * as dataService from '../services/dataService';
 
 class AddBookModal extends React.Component {
     constructor(props) {
@@ -16,18 +15,7 @@ class AddBookModal extends React.Component {
     }
 
     async createBook(body) {
-          const response = await fetch(
-            `${base_url}/api/book/create`, {
-              method: "POST",
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify(body),
-            }
-          );
-          const responseData = await response.json();
-      
-          if (!response.ok) {
-            throw new Error(responseData.message);
-          }
+        await dataService.createBook(body);
     }
 
     render() {

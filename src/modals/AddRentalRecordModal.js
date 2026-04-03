@@ -6,17 +6,15 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Autocomplete from '@mui/material/Autocomplete';
-import Select from 'react-select';
 import InputLabel from '@mui/material/InputLabel';
 import { PropTypes } from "prop-types";
-
-const base_url = process.env.REACT_APP_NODE_ENV === 'development' ? process.env.REACT_APP_LOCAL_BASE_URL : process.env.REACT_APP_SERVER_BASE_URL
+import * as dataService from '../services/dataService';
 
 class AddRentalRecordModal extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedStudent: {},
+            selectedStudent: [],
             selectedItems: [],
             totalPrice: 0,
         };
@@ -26,14 +24,18 @@ class AddRentalRecordModal extends React.Component {
 
     closeModal() {
         const { handleClose } = this.props;
-        this.setState({ selectedItems: [], selectedStudent: {} });
+        this.setState({ selectedItems: [], selectedStudent: [] });
         handleClose();
     }
 
-    handleStudentChange(event) {
+    handleStudentChange(event, v) {
         const { studentList } = this.props;
         if (event) {
-            this.setState({selectedStudent: studentList.filter((student) => student._id === event.value)[0]});
+            let students = [];
+            v.forEach((student) => {
+                students.push(studentList.filter((s) => s._id === student.value)[0]);
+            });
+            this.setState({ selectedStudent: students });
         } else {
             this.setState({ selectedStudent: {} });
         }
@@ -44,7 +46,7 @@ class AddRentalRecordModal extends React.Component {
         if (event) {
             let price = 0;
             let items = [];
-            v.map((item) => {
+            v.forEach((item) => {
                 price += item.price;
                 items.push(bookList.filter((book) => book._id === item.value)[0]);
             });
@@ -55,33 +57,11 @@ class AddRentalRecordModal extends React.Component {
     }
     
     async editStudent(student) {
-        const response = await fetch(
-          `${base_url}/api/student/edit`, {
-            method: "PUT",
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(student),
-          }
-        );
-        const responseData = await response.json();
-    
-        if (!response.ok) {
-          throw new Error(responseData.message);
-        }
+        await dataService.editStudent(student);
     }
 
     async createRentalRecord(body) {
-        const response = await fetch(
-          `${base_url}/api/rentalRecord/create`, {
-            method: "POST",
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body),
-          }
-        );
-        const responseData = await response.json();
-    
-        if (!response.ok) {
-          throw new Error(responseData.message);
-        }
+        await dataService.createRentalRecord(body);
     }
 
     render() {
@@ -99,45 +79,58 @@ class AddRentalRecordModal extends React.Component {
                     event.preventDefault();
                     const formData = new FormData(event.currentTarget);
                     const recordJson = Object.fromEntries(formData.entries());
-                    const body = {
-                        student: selectedStudent,
-                        purchased_items: selectedItems,
-                        rental_date: recordJson.rental_date,
-                        payment_due: totalPrice,
-                        comment: recordJson.comment,
-                        paid: false,
-                    };
-                    await this.createRentalRecord(body);
-                    selectedStudent.book_rental.push(selectedItems);
-                    await this.editStudent(selectedStudent);
+                    for (let student of selectedStudent) {
+                        const body = {
+                            student: student,
+                            purchased_items: selectedItems,
+                            rental_date: recordJson.rental_date,
+                            payment_due: totalPrice,
+                            comment: recordJson.comment,
+                            paid: false,
+                        };
+                        await this.createRentalRecord(body);
+                        student.book_rental.push(selectedItems);
+                        await this.editStudent(student);
+                    }
+                    
                     this.closeModal();
                 },
                 }}
             >
                 <DialogTitle>Book Purchase Record</DialogTitle>
                 <DialogContent>
-                    <InputLabel id="student-label">Select A Student</InputLabel>
-                    <Select
-                        labelId="student-label"
+                    <InputLabel id="student-label">Select Student(s)</InputLabel>
+                    <Autocomplete
+                        multiple
                         id="student"
                         fullWidth
-                        label="Student"
-                        onChange={(e) => this.handleStudentChange(e)}
+                        onChange={(e, v) => this.handleStudentChange(e, v)}
                         options={studentOptions}
-                        isClearable
+                        filterSelectedOptions
+                        getOptionLabel={(option) => option.label}
+                        isOptionEqualToValue={(option, value) => option.value === value.value}
                         required
+                        getOptionDisabled={() => selectedStudent.length === 1 && selectedItems.length > 1}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                variant="standard"
+                            />
+                        )}
                     />
                     <br />
                     <InputLabel id="book-label">Select Item(s)</InputLabel>
                     <Autocomplete
-                        labelId="book-label"
                         multiple
                         id="book"
+                        fullWidth
                         onChange={(e, v) => this.handleBookChange(e, v)}
                         options={bookOptions}
+                        filterSelectedOptions
                         getOptionLabel={(option) => option.label}
-                        isClearable
+                        isOptionEqualToValue={(option, value) => option.value === value.value}
                         required
+                        getOptionDisabled={() => selectedStudent.length > 1 && selectedItems.length === 1}
                         renderInput={(params) => (
                             <TextField
                                 {...params}

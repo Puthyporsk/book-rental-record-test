@@ -6,8 +6,7 @@ import AddStudentModal from './modals/AddStudentModal';
 import AddBookModal from './modals/AddBookModal';
 import AddRentalRecordModal from './modals/AddRentalRecordModal';
 import FilterModal from './modals/FilterModal';
-
-const base_url = process.env.REACT_APP_NODE_ENV === 'development' ? process.env.REACT_APP_LOCAL_BASE_URL : process.env.REACT_APP_SERVER_BASE_URL
+import * as dataService from './services/dataService';
 
 class App extends React.Component {
   constructor(props) {
@@ -29,16 +28,10 @@ class App extends React.Component {
 
   }
 
+  // Get All Students
   async getAllStudents() {
     try {
-      const response = await fetch(
-        `${base_url}/api/student/getAll`
-      );
-      const responseData = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(responseData.message);
-      }
+      const responseData = await dataService.getAllStudents();
       this.setState({ students: responseData.students.sort((a, b) => a.first_name > b.first_name ? 1 : -1) });
     } catch (err) {
       console.error(err);
@@ -47,14 +40,7 @@ class App extends React.Component {
 
   async getAllBooks() {
     try {
-      const response = await fetch(
-        `${base_url}/api/book/getAll`
-      );
-      const responseData = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(responseData.message);
-      }
+      const responseData = await dataService.getAllBooks();
       this.setState({ books: responseData.books.sort((a, b) => a.name > b.name ? 1 : -1) });
     } catch (err) {
       console.error(err);
@@ -63,14 +49,7 @@ class App extends React.Component {
 
   async getAllRentalRecord() {
     try {
-      const response = await fetch(
-        `${base_url}/api/rentalRecord/getAll`
-      );
-      const responseData = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(responseData.message);
-      }
+      const responseData = await dataService.getAllRentalRecords();
       this.setState({ rentalRecords: responseData.rentalRecords.sort((a, b) => a.student.first_name > b.student.first_name ? 1 : -1) });
     } catch (err) {
       console.error(err);
